@@ -1,0 +1,50 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="https://fonts.googleapis.com/css?family=Do+Hyeon&display=swap" rel="stylesheet">
+    <!-- 구글 폰트 -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!--부트스트랩-->
+    <style>
+    body{
+        font-family: 'Do Hyeon', sans-serif;
+    }
+    </style>
+
+    <title>멋사피하기</title>
+    <link rel="icon" href="{%static 'likelion.png'%}"> 
+    <!--아이콘과 제목설정-->
+</head>
+<body>
+    <div align="center">
+        <div align="left"style="margin-top:100px;border: 10px solid orange;width:500px;height:300px;padding:5px;">
+            <br>
+            <br>
+            <form method="POST" action="{%url 'register'%}">
+            {% csrf_token %}
+                ID :
+                <input name="id" type="text">
+                <br>
+                <br>
+                비밀번호: 
+                <input name="password" type="password">
+                <br>
+                <br>
+                한번더:
+                <input name="password_confirm" type="password">
+                <br>
+                <br>
+                <input class="btn btn-warning" style="width:80px;float:right;margin-right:10px;color:black" type="submit" >
+            </form>
+        </div>
+        <div style="text-align: right;width:500px;margin-top:10px;">
+            <a href="{% url 'main' %}">돌아가기</a>
+        </div>
+
+    </div>
+
+</body>
+</html>

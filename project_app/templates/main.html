@@ -1,0 +1,316 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!--부트스트랩-->
+
+
+    <link href="https://fonts.googleapis.com/css?family=Black+Han+Sans&display=swap" rel="stylesheet">
+    <!-- 구글 폰트 -->
+
+
+    <title>멋사피하기</title>
+    <link rel="icon" href="{%static 'likelion.png'%}"> 
+    <!--아이콘과 제목설정-->
+    
+
+
+    <style>
+    .main{
+        width: 1280px; height:720px;
+        border: 10px solid orange;
+        background-color:white; 
+        margin-top:50px;
+        padding:0px;
+    }
+    .ranking{
+        width: 200px; height:100%;
+        background-color:rgba(0,0,0,0.8);
+        margin-left:0;
+        
+    }   
+    .game{
+        padding:0px;
+    }
+    .fonts{
+        font-family: 'Black Han Sans', sans-serif;
+    }
+    </style>
+</head>
+<body>
+    <div align="center">
+        <div class="main row">
+            
+            <!--게임 화면-->
+            <div class="fonts game col-sm-10">
+                {% if asdf %}
+                    <!--진짜 게임 화면-->
+                    <h1 id="text"style="position:relative;margin-top:28%;display:none;">스페이스바를 누르면 시작합니다!
+                        <br><span style="color:orange;">←→</span> : 좌우이동</h1>
+                    <h1 id="text2"style="position:relative;display:none;">점수:</h1>
+                    <canvas id="playground" width="1050px" height="700px">
+                        <script type='text/javascript'>
+                        
+                        //csrf 토큰을 이용하기 위해서는 js를 외부에서 작성할수가 없네여..
+
+
+                            var canvas = document.getElementById("playground");
+                            var ctx = canvas.getContext("2d");
+
+                            var playing = false; //게임이 진행중인지 확인하는 변수
+                            var start = false; //게임을 시작하기 전인지 확인
+                            var player = {x:20,y:35,color:"orange",speed:1.5,length:10,score:0}; //플레이어 정보
+                            
+                            var bgm = new Audio("{%static 'Again.mp3'%}"); //bgm
+                            bgm.volume = 0.8;
+                            bgm.loop= true;
+                            //떨어질때 나는 소리
+                            var drop = new Audio("{%static 'Glass_Drop_and_Roll.mp3'%}")
+                            drop.volume = 1;
+
+                            var right = false; 
+                            var left = false;  //좌우이동 상태
+                            /*var up = false;
+                            var down = false;*/ //위아래 이동은 아직 안씀
+
+
+
+
+                            //키보드 조작 관련
+                            document.addEventListener("keydown", push, false); //누르는지 확인
+                            document.addEventListener("keyup", pull, false);  //놓았는지 확인
+
+
+                            function push(key) { //누를 때
+                                if(key.keyCode == 68) { //D
+                                    right = true;
+                                }else if(key.keyCode == 65) {//A
+                                    left = true; 
+                                }/*else if(key.keyCode == 87){//W
+                                    up = true;
+                                }else if(key.keyCode == 83){//S
+                                down = true;
+                                }*/  
+                            }
+
+                            function post_to_url(path, params, method) { //자바스크립트에서 post를 사용하는 함수 (https://differentiate.tistory.com/m/15)
+                                method = method || "post"; // Set method to post by default, if not specified.
+                            
+                                // The rest of this code assumes you are not using a library.
+                                // It can be made less wordy if you use one.
+                                var form = document.createElement("form");
+                                form.setAttribute("method", method);
+                                form.setAttribute("action", path);
+                                
+
+                                for(var key in params) {
+                                    var hiddenField = document.createElement("input");
+                                    hiddenField.setAttribute("type", "hidden");
+                                    hiddenField.setAttribute("name", key);
+                                    hiddenField.setAttribute("value", params[key]);
+                            
+                                    form.appendChild(hiddenField);
+                                }
+                            
+                                document.body.appendChild(form);
+                                form.submit();
+                            }
+
+
+
+                            function pull(key) { //놓을 때
+                                                    
+                                if(key.keyCode == 68) {
+                                    right = false;
+                                }else if(key.keyCode == 65) {
+                                    left = false;
+                                }/*else if(key.keyCode == 87){
+                                    up = false;
+                                }else if(key.keyCode == 83){
+                                    down = false;
+                                }*/
+                                if(key.keyCode == 32){
+                                    if(!start&&!playing){
+                                        start = true;
+                                        playing = true;
+
+                                        bgm.load();
+                                        bgm.play(); //bgm
+
+                                        document.getElementById('text').style.display = "none";
+                                        document.getElementById('playground').style.display = "block";
+                                    }
+                                    else if(start&&!playing){
+                                        post_to_url("{%url 'ending'%}", {"score":player.score,'csrfmiddlewaretoken': '{{ csrf_token }}'});
+
+                                        
+                                        playing = true;
+                                        player.score = 0;
+                                        document.getElementById('text').style.display = "none";
+                                        document.getElementById('text2').style.display = "none";
+                                        document.getElementById('playground').style.display = "block"
+                                        
+                                    }
+                                }
+                            }
+
+
+                            function refresh(color) { //주기적인 refresh 를 위한 함수
+                                ctx.clearRect(0,0,canvas.width, canvas.height );
+                                ctx.beginPath();
+                                ctx.rect(0, 0, canvas.width, canvas.height);
+                                ctx.fillStyle = color;
+                                ctx.fill();
+                                ctx.closePath();
+                            }
+
+                            function circle(x,y,length,color) { // 원을 그리는 함수
+                                y = canvas.height-y;
+                                ctx.beginPath();
+                                ctx.arc(x, y, length, 0, Math.PI*2, false);
+                                ctx.fillStyle = color;
+                                ctx.fill();
+                                ctx.closePath();
+                            }
+
+                            function item()
+                            {
+                                this.x = 0;
+                                this.y = 0;
+                                this.image = new Image();
+                                this.image.src = "/static/likelion.png";
+                                this.width = 40;
+                                this.height = 40;
+                                this.speed = 0.1;
+                            } //장애물 생성 틀
+                            var items = [];  //생성된 장애물들이 쌓일 곳
+
+                            function check(a,b){
+                                return !(a.x > b.x + b.width || 
+                                    a.x + a.length < b.x ||
+                                    canvas.height-a.y > b.y + b.height ||
+                                    canvas.height-a.y + a.length < b.y
+                                );
+                            }
+                            //메인 함수 (반복적으로 재생 됨)
+                            function main(){
+                                
+                                if (!playing&&start) { //게임중이 아닐경우
+                                    document.getElementById('text').style.display = "block";
+                                    document.getElementById('text2').style.display = "block";
+                                    document.getElementById('text2').innerHTML = "점수: "+"<span style='color:orange;'>"+player.score+"</span>";
+                                    document.getElementById('playground').style.display = "none"
+                                    return;
+                                }else if(!playing&&!start){
+                                    document.getElementById('text').style.display = "block";
+                                    document.getElementById('playground').style.display = "none";
+                                    return;
+                                }
+                                
+
+                                refresh("white"); //배경 refresh
+
+                                document.getElementById('scoreboard').innerHTML = "점수: "+player.score;
+                                
+                                //키보드 버튼을 누르면 플레이어 이동
+                                if (right && player.x <= canvas.width - player.length ) { //오른쪽 이동
+                                    player.x += player.speed;
+
+                                }else if (left && player.x >= player.length) { //왼쪽 이동
+                                    player.x -= player.speed;
+                                }
+                                /*
+                                if (up && player.y <= 450 - player.length) { //위로 이동
+                                    player.y += player.speed;
+                                }else if (down && player.y >= player.length) { //아래로 이동
+                                    player.y -= player.speed;
+                                }
+                                */
+                                circle(player.x, player.y, player.length, player.color);//플레이어 그리기
+                                for(let item_ of items){ //아이템들을 이동시키자
+                                    if(item_.y<canvas.height){ //맨 아래까지 떨어졌는지 확인
+                                        ctx.drawImage(item_.image,item_.x,item_.y,
+                                            item_.width,item_.height);
+                                        item_.y += item_.speed;
+                                        item_.speed*=1.0025; 
+                                    }else{  //맨 아래까지 떨어졌다면 점수를 주자
+                                        player.score+=10;
+                                        for(var i = 0; i<items.length;i++){
+                                            if(items[i].x == item_.x &&items[i].y == item_.y){
+                                                items.splice(i,1); //점수가 된 멋사는 사라져야해....
+                                                break;
+                                            } 
+                                        }
+                                    }
+                                    if(check(player,item_)){ //충돌했다면 게임 종료
+                                        drop.load();
+                                        drop.play();
+
+                                        playing = false;
+                                        items = []
+                                        player.x=20;
+                                        player.y=35;
+                                        document.getElementById('text').innerHTML = "스페이스바를 눌러 점수를 업로드하세요!";
+                                        break; 
+                                        
+                                    }
+                                }
+                            }
+                            setInterval(main,3); //메인 함수를 반복재생
+                            setInterval(function(){
+                                if(playing){
+                                    const newitem = new item();
+                                    items.push(newitem);
+                                    newitem.speed = Math.random()*2+1;
+                                    newitem.x = (Math.random()*canvas.width-40);
+                                    newitem.y = 0
+                                }
+                            },70) //장애물들을 꾸준히 생성 (주기: 1초)
+
+
+                                                    
+                                                    
+                        
+                        </script>
+                    </canvas>
+                {%else%}
+                    <h3 style="margin-top:30%;">로그인이 필요합니다.</h3>
+                {%endif%}
+            </div>
+            
+            <!--랭킹-->
+            <div class="ranking col-sm-2">
+                <h4 style="color:white;margin-top:10px;" >RANKING</h4>
+                <br>
+                <div style="text-align: left;">
+                    {% for sc in score %}
+                        <p style="color:snow;"><span style="color:gray;margin-right:4px;">
+                            {{forloop.counter}} </span> {{sc.username}} <span style="color:orange">{{sc.score}}</span> 점 </p>
+                    {% endfor %}
+                </div>
+            
+            </div>
+            <div style="text-align: right;width:100%;margin-top:10px;">
+                {% if asdf%}
+                <h4 class="fonts"id="scoreboard" style="margin-top:1px;float:left">점수: </h3>
+                username: <span style="color:sandybrown">{{username}}</span> 
+                <form method="POST" action="{% url 'logout'%}">
+                {% csrf_token %}
+                <input type="submit" class="btn btn-default" value="로그아웃">
+                </form>
+                {%endif%}
+                <a href="{% url 'register' %}">회원가입</a>
+                <a href="{% url 'login' %}"><span>/</span>로그인</a>
+            </div>
+        </div>
+
+
+    </div>
+
+    </div>
+</body>
+</html>
