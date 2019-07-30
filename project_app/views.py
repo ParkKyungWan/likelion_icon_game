@@ -46,7 +46,7 @@ def ending(request):
         game.username= request.user.username
         game.score = request.POST['score']
         game.save()
-        g = Game.objects.all().order_by('-score')[:15].values_list("id", flat=True) #상위15개만 보존
+        g = Game.objects.all().order_by('score')[15:].values_list("id", flat=True) #상위15개만 보존
         Game.objects.exclude(pk__in=list(g)).delete() 
         return redirect('main')
     else:

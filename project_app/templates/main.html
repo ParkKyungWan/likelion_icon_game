@@ -263,11 +263,12 @@
                                     const newitem = new item();
                                     items.push(newitem);
                                     newitem.speed = Math.random()*2+1;
-                                    cw = canvas.width-40;
+                                    cw = canvas.width+40;
                                     newitem.x = (Math.random()*cw);
-                                    newitem.y = 0
+                                    cw-=40;
+                                    newitem.y = 0;
                                 }
-                            },70) //장애물들을 꾸준히 생성 (주기: 1초)
+                            },70); //장애물들을 꾸준히 생성 (주기: 1초)
 
 
                                                     
