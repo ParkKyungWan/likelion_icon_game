@@ -147,6 +147,7 @@
                                     else if(start&&!playing){
                                         post_to_url("{%url 'ending'%}", {"score":player.score,'csrfmiddlewaretoken': '{{ csrf_token }}'});
                                         player.score = 0;
+                                        start = false;
                                         document.getElementById('text').style.display = "none";
                                         document.getElementById('text2').style.display = "none";
                                         document.getElementById('playground').style.display = "block"
