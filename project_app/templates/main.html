@@ -205,6 +205,9 @@
                                     return;
                                 }else if(!playing&&!start){
                                     document.getElementById('text').style.display = "block";
+                                    if(document.getElementById('text').innerHTML == "스페이스바를 눌러 점수를 업로드하세요!"){
+                                        document.getElementById('text').innerHTML = "점수를 업로드하고 있습니다..";
+                                    }
                                     document.getElementById('playground').style.display = "none";
                                     return;
                                 }
