@@ -146,9 +146,6 @@
                                     }
                                     else if(start&&!playing){
                                         post_to_url("{%url 'ending'%}", {"score":player.score,'csrfmiddlewaretoken': '{{ csrf_token }}'});
-
-                                        
-                                        playing = true;
                                         player.score = 0;
                                         document.getElementById('text').style.display = "none";
                                         document.getElementById('text2').style.display = "none";
@@ -266,7 +263,8 @@
                                     const newitem = new item();
                                     items.push(newitem);
                                     newitem.speed = Math.random()*2+1;
-                                    newitem.x = (Math.random()*canvas.width-40);
+                                    cw = canvas.width-40;
+                                    newitem.x = (Math.random()*cw);
                                     newitem.y = 0
                                 }
                             },70) //장애물들을 꾸준히 생성 (주기: 1초)
